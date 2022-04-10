@@ -62,6 +62,7 @@ describe("Basic Tests", () => {
   return;
 });
 
+
 function check(balances, sample, name) {
   let errors = 0;
   Object.keys(balances).forEach((key) => {
