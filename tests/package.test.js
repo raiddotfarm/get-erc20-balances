@@ -8,8 +8,8 @@ const { BigNumber } = require("ethers");
 const fromBlock = 14555003;
 const toBlock = 14555203;
 const rpc =
-  "https://eth-mainnet.alchemyapi.io/v2/8LiA7M2cWDG6azlTapCSdAfgow82wwrb";
-const pagination = 50;
+  "homestead";
+const pagination = 25;
 
 describe("Basic Tests", () => {
   test("Should use default RPC when none provided", async () => {

@@ -22,6 +22,19 @@ jobs:
       - name: Test
         run: npx jest --testTimeout 50000
 
+      - name: Commit latest dependencies to Github
+        run: |
+          echo ${{ github.ref }}
+          git add .
+          git config --local user.email "gm@raid.farm"
+          git config --local user.name "raiddotfarmbot"
+          git commit -m "Beep Bop" -a | exit 0
+
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+
       - name: Version
         uses: "phips28/gh-action-bump-version@master"
         env:

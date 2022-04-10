@@ -24,7 +24,7 @@ module.exports = async function getBalance(
       currentBlock += paginateLimit;
     }
   } else {
-    const events = await getEvents(tokenContract, startBlock, lastBlock - 1);
+    const events = await getEvents(tokenContract, startBlock, lastBlock);
     balances = await fillData(balances, events);
   }
 
@@ -54,7 +54,6 @@ function fillData(balances, events) {
     const from = item.from;
     const to = item.to;
     const amount = item.value;
-    console.log(from, to);
     if (!Object.keys(balances).includes(from)) {
       balances[from] = BigNumber.from(0);
     }
