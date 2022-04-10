@@ -7,26 +7,24 @@ const { BigNumber } = require("ethers");
 
 const fromBlock = 14555003;
 const toBlock = 14555203;
-const rpc =
-  "homestead";
-const pagination = 25;
-
+const rpc = process.env.MAINNET_RPC || "homestead";
+const pagination = 300;
+const contractAddress = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48";
 describe("Basic Tests", () => {
-  test("Should use default RPC when none provided", async () => {
-    const balances = await run(
-      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
-      undefined,
-      fromBlock,
-      toBlock
-    );
+  test("reset", () => {
+    fs.writeFileSync("tests/results.json", JSON.stringify({}));
+    return;
+  });
+  test("simple", async () => {
+    const balances = await run(contractAddress, undefined, fromBlock, toBlock);
     fs.writeFileSync("tests/samples/simple.json", JSON.stringify(balances));
-    check(balances, simpleSample, "regular");
+    check(balances, simpleSample, "without pagination and data");
     return;
   });
 
   test("Should work properly with pagination", async () => {
     const balances = await run(
-      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      contractAddress,
       rpc,
       fromBlock,
       toBlock,
@@ -39,27 +37,26 @@ describe("Basic Tests", () => {
 
   test("Should work properly with data provided beforehand", async () => {
     const balances = await run(
-      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      contractAddress,
       rpc,
       fromBlock,
       toBlock,
-      simpleSample
+      require("./samples/simple.json")
     );
-    check(balances, withDataSample, "three");
+    check(balances, withDataSample, "when data provided beforehand");
     fs.writeFileSync("tests/samples/withdata.json", JSON.stringify(balances));
     return;
   });
 
-  test("Should work properly with pagination and data provided beforehand", async () => {
+  test("Should work properly with data provided beforehand + pagination", async () => {
     const balances = await run(
-      "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48",
+      contractAddress,
       rpc,
       fromBlock,
       toBlock,
-      simpleSample,
-      pagination
+      require("./samples/simple.json")
     );
-    check(balances, require("./samples/withdata.json"), "four");
+    check(balances, withDataSample, "pagination when data provided beforehand");
     return;
   });
   return;
@@ -72,12 +69,14 @@ function check(balances, sample, name) {
       const diff = BigNumber.from(balances[key]).sub(
         BigNumber.from(sample[key])
       );
-      expect(diff.gt(10000000)).toBe(false);
+      expect(diff.gt(100000000000000)).toBe(false);
+      expect(diff.lt(-100000000000000)).toBe(false);
     } catch (e) {
       errors++;
     }
   });
   const data = JSON.parse(fs.readFileSync("tests/results.json"));
   data[name] = errors;
+  data["lastUpdate"] = Date.now();
   fs.writeFileSync("tests/results.json", JSON.stringify(data));
 }

@@ -12,6 +12,8 @@ module.exports = async function getBalance(
   const tokenContract = new ethers.Contract(contract, abi, provider);
   const lastBlock = endBlock || (await provider.getBlockNumber());
   let balances = data || {};
+  console.log(balances);
+  
   if (paginateLimit > 0 && lastBlock - startBlock > paginateLimit) {
     currentBlock = startBlock;
     while (currentBlock < lastBlock) {
@@ -32,6 +34,7 @@ module.exports = async function getBalance(
     balances[key] = balances[key].toString();
   });
   delete balances["0x0000000000000000000000000000000000000000"];
+  console.log(process._getActiveHandles());
   return balances;
 };
 
