@@ -20,7 +20,7 @@ jobs:
         run: npm install
 
       - name: Test
-        run: npx jest
+        run: npx jest --testTimeout 50000
 
       - name: Version
         uses: "phips28/gh-action-bump-version@master"

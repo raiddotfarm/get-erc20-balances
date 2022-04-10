@@ -12,13 +12,8 @@ module.exports = async function getBalance(
   const tokenContract = new ethers.Contract(contract, abi, provider);
   const lastBlock = endBlock || (await provider.getBlockNumber());
   let balances = data || {};
-  console.log(`Fetching balances from ${startBlock} to ${lastBlock}`);
   if (paginateLimit > 0 && lastBlock - startBlock > paginateLimit) {
     currentBlock = startBlock;
-    console.log(
-      `Paginating from ${startBlock} to ${lastBlock} in brackets of ${paginateLimit}`
-    );
-    console.log(paginateLimit);
     while (currentBlock < lastBlock) {
       const events = await getEvents(
         tokenContract,
@@ -27,10 +22,9 @@ module.exports = async function getBalance(
       );
       balances = await fillData(balances, events);
       currentBlock += paginateLimit;
-      currentBlock += 1;
     }
   } else {
-    const events = await getEvents(tokenContract, startBlock, lastBlock);
+    const events = await getEvents(tokenContract, startBlock, lastBlock - 1);
     balances = await fillData(balances, events);
   }
 
@@ -43,7 +37,7 @@ module.exports = async function getBalance(
 
 async function getEvents(tokenContract, startBlock, endBlock) {
   return await tokenContract
-    .queryFilter("*", startBlock, endBlock)
+    .queryFilter("*", startBlock + 1, endBlock)
     .then((events) => {
       events = events.filter((x) =>
         x.topics.includes(
@@ -60,13 +54,14 @@ function fillData(balances, events) {
     const from = item.from;
     const to = item.to;
     const amount = item.value;
-
+    console.log(from, to);
     if (!Object.keys(balances).includes(from)) {
       balances[from] = BigNumber.from(0);
     }
     if (!Object.keys(balances).includes(to)) {
       balances[to] = BigNumber.from(0);
     }
+
     balances[from] = BigNumber.from(balances[from]).sub(amount);
 
     balances[to] = BigNumber.from(balances[to]).add(amount);
