@@ -57,16 +57,17 @@ describe("Basic Tests", () => {
     return;
   });
 
-  test("Should work properly with data provided beforehand", async () => {
+  test("Should work properly with data provided beforehand + pagination", async () => {
     const balances = await run(
       contractAddress,
       rpc,
       fromBlock,
       toBlock,
-      JSON.parse(fs.readFileSync("tests/samples/simple.json", "utf8"))
+      JSON.parse(fs.readFileSync("tests/samples/simple.json", "utf8")),
+      50
     );
 
-    check(balances, withDataSample, "when data provided beforehand 2");
+    check(balances, withDataSample, "when data provided beforehand + pagination");
     return;
   });
 
