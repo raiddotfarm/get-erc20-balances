@@ -19,7 +19,15 @@ describe("Basic Tests", () => {
   });
 
   test("simple", async () => {
-    const balances = await run(contractAddress, rpc, fromBlock, toBlock);
+    const balances = await run(
+      contractAddress,
+      rpc,
+      fromBlock,
+      toBlock,
+      undefined,
+      undefined,
+      true
+    );
 
     fs.writeFileSync("tests/samples/simple.json", JSON.stringify(balances));
     check(balances, simpleSample, "without pagination and data");
@@ -34,7 +42,8 @@ describe("Basic Tests", () => {
       fromBlock,
       toBlock,
       {},
-      pagination
+      pagination,
+      true
     );
 
     check(balances, require("./samples/simple.json"), "simple pagination");
@@ -49,7 +58,9 @@ describe("Basic Tests", () => {
       rpc,
       fromBlock,
       toBlock,
-      JSON.parse(fs.readFileSync("tests/samples/simple.json", "utf8"))
+      JSON.parse(fs.readFileSync("tests/samples/simple.json", "utf8")),
+      undefined,
+      true
     );
 
     check(balances, withDataSample, "when data provided beforehand");
@@ -64,10 +75,15 @@ describe("Basic Tests", () => {
       fromBlock,
       toBlock,
       JSON.parse(fs.readFileSync("tests/samples/simple.json", "utf8")),
-      50
+      50,
+      true
     );
 
-    check(balances, withDataSample, "when data provided beforehand + pagination");
+    check(
+      balances,
+      withDataSample,
+      "when data provided beforehand + pagination"
+    );
     return;
   });
 

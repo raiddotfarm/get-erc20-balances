@@ -1,12 +1,14 @@
 const { ethers, BigNumber } = require("ethers");
 const abi = require("./abi.json");
+const fs = require("fs");
 module.exports = async function getBalance(
   contract,
   rpc,
   startBlock,
   endBlock,
   data,
-  paginateLimit
+  paginateLimit,
+  logProgress
 ) {
   if (!contract) {
     throw new Error("Contract address is required");
@@ -43,20 +45,43 @@ module.exports = async function getBalance(
   if (!startBlock) {
     startBlock = 0;
   }
+  if (logProgress) {
+    fs.writeFileSync("get-erc20-balances.log", "");
+  }
   if (paginateLimit > 0 && lastBlock - startBlock > paginateLimit) {
     currentBlock = startBlock;
     while (currentBlock < lastBlock) {
+      if (logProgress) {
+        fs.appendFileSync(
+          "get-erc20-balances.log",
+          `${Date.now()}: fetching blocks ${currentBlock} to ${
+            currentBlock + paginateLimit
+          }\n`
+        );
+      }
       const events = await getEvents(
         tokenContract,
         currentBlock,
         currentBlock + paginateLimit
       );
-      balances = await fillData(balances, events);
+      if (logProgress) {
+        fs.appendFileSync(
+          "get-erc20-balances.log",
+          `${Date.now()}: found ${events.length} events\n`
+        );
+      }
+      balances = await fillData(balances, events, logProgress);
       currentBlock += paginateLimit;
     }
   } else {
+    if (logProgress) {
+      fs.appendFileSync(
+        "get-erc20-balances.log",
+        `${Date.now()}: fetching blocks ${startBlock} to ${lastBlock}\n`
+      );
+    }
     const events = await getEvents(tokenContract, startBlock, lastBlock);
-    balances = await fillData(balances, events);
+    balances = await fillData(balances, events, logProgress);
   }
 
   Object.keys(balances).forEach((key) => {
@@ -79,12 +104,18 @@ async function getEvents(tokenContract, startBlock, endBlock) {
     });
 }
 
-function fillData(balances, events) {
+function fillData(balances, events, logProgress) {
   const txns = events.map((x) => x.args);
   txns.forEach((item) => {
     const from = item.from;
     const to = item.to;
     const amount = item.value;
+    if (logProgress) {
+      fs.appendFileSync(
+        "get-erc20-balances.log",
+        `${Date.now()}: ${from} sent ${amount} -> ${to}\n`
+      );
+    }
     if (!Object.keys(balances).includes(from)) {
       balances[from] = BigNumber.from(0);
     }
