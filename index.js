@@ -6,13 +6,43 @@ module.exports = async function getBalance(
   startBlock,
   endBlock,
   data,
-  paginateLimit = 0
+  paginateLimit
 ) {
+  if (!contract) {
+    throw new Error("Contract address is required");
+  }
+  if (!rpc) {
+    console.warn(
+      "No rpc provided, using default rpc - this might be very slow"
+    );
+  }
+  if (!startBlock) {
+    console.warn(
+      "No start block provided, using default start block - this may or may not be slow"
+    );
+  }
+  if (!endBlock) {
+    console.warn(
+      "No end block provided, using default end block - this may or may not be slow"
+    );
+  }
+  if (!data) {
+    console.warn("No data provided, calculating from scratch");
+  }
+  if (!paginateLimit) {
+    console.warn(
+      "No paginate limit provided, searching all blocks at once - this may cause an error if there are too many blocks"
+    );
+    paginateLimit = 0;
+  }
+
   const provider = ethers.getDefaultProvider(rpc);
   const tokenContract = new ethers.Contract(contract, abi, provider);
   const lastBlock = endBlock || (await provider.getBlockNumber());
   let balances = data || {};
-
+  if (!startBlock) {
+    startBlock = 0;
+  }
   if (paginateLimit > 0 && lastBlock - startBlock > paginateLimit) {
     currentBlock = startBlock;
     while (currentBlock < lastBlock) {
