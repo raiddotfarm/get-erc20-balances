@@ -69,6 +69,14 @@ describe("Basic Tests", () => {
     check(balances, withDataSample, "pagination when data provided beforehand");
     return;
   });
+
+  test("check errors", async () => {
+    Object.keys(require("./results.json")).forEach((key) => {
+      if (key === "lastUpdate") return;
+      expect(require("./results.json")[key]).toBe(0);
+    });
+    return;
+  });
   return;
 });
 
